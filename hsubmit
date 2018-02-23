@@ -10,7 +10,7 @@ cp ${queryname} temp_query_file
 
 # ask user to type in username
 #read -p "cs username: " USERNAME 
-USERNAME=aabhishek
+USERNAME=your_username_goes_here
 
 # queryname is now the argument without the file extension. e.g. test.sql -> test
 queryname=${queryname%%.*}

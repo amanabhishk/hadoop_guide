@@ -1,3 +1,4 @@
+insert overwrite directory 'hdfs://hadoop1.cs.wisc.edu:8020/user/your_username_goes_here/output'
 
 SELECT
 

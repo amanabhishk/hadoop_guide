@@ -1,12 +1,12 @@
-`Logging initialized using configuration in file:/etc/hive/conf.dist/hive-log4j.properties`
-`Hive history file=/tmp/aabhishek/hive_job_log_c1bce8d6-5daa-4927-9ac4-a716a2b3f06b_507858846.txt`
-`Total MapReduce jobs = 3`
-`Launching Job 1 out of 3`
-`Number of reduce tasks is set to 0 since there's no reduce operator`
-`Starting Job = job_201802021028_0174, Tracking URL = http://hadoop1.cs.wisc.edu:50030/jobdetails.jsp?jobid=job_201802021028_0174`
-`Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_201802021028_0174`
-`Hadoop job information for Stage-1: number of mappers: 26; number of reducers: 0`
-`2018-02-16 13:35:44,446 Stage-1 map = 0%,  reduce = 0%`
-`2018-02-16 13:35:54,502 Stage-1 map = 2%,  reduce = 0%`
-`2018-02-16 13:35:55,511 Stage-1 map = 11%,  reduce = 0%`
-`2018-02-16 13:35:56,524 Stage-1 map = 17%,  reduce = 0%, Cumulative CPU 52.29 sec`
+Logging initialized using configuration in file:/etc/hive/conf.dist/hive-log4j.properties
+Hive history file=/tmp/aabhishek/hive_job_log_c1bce8d6-5daa-4927-9ac4-a716a2b3f06b_507858846.txt
+Total MapReduce jobs = 3
+Launching Job 1 out of 3
+Number of reduce tasks is set to 0 since there's no reduce operator
+Starting Job = job_201802021028_0174, Tracking URL = http://hadoop1.cs.wisc.edu:50030/jobdetails.jsp?jobid=job_201802021028_0174
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_201802021028_0174
+Hadoop job information for Stage-1: number of mappers: 26; number of reducers: 0
+2018-02-16 13:35:44,446 Stage-1 map = 0%,  reduce = 0%
+2018-02-16 13:35:54,502 Stage-1 map = 2%,  reduce = 0%
+2018-02-16 13:35:55,511 Stage-1 map = 11%,  reduce = 0%
+2018-02-16 13:35:56,524 Stage-1 map = 17%,  reduce = 0%, Cumulative CPU 52.29 sec

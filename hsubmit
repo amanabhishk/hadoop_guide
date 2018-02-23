@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# This makes it so you exit if there are errors instead of trying to finish the script
+set -eu
+
+# queryname is first argument
+queryname=$1
+# copy to temp file (locally)
+cp ${queryname} temp_query_file
+
+# ask user to type in username
+#read -p "cs username: " USERNAME 
+USERNAME=aabhishek
+
+# queryname is now the argument without the file extension. e.g. test.sql -> test
+queryname=${queryname%%.*}
+
+# this prepends the query with the appropriate 'insert' command
+
+#local version:
+# sed -i "1s@^@insert overwrite local directory 'private/output/${queryname}'\n\n@g" temp_query_file
+
+# hadoop/hdfs version:
+#sed -i '' "1s@^@insert overwrite directory 'hdfs://hadoop1.cs.wisc.edu:8020/user/${USERNAME}/output/${queryname}'\n\n@g" temp_query_file
+
+echo "Query name is: ${queryname}"
+
+# copy the temp query file to cs server
+scp temp_query_file ${USERNAME}@tdc1.cs.wisc.edu:~/private/
+# ssh, start screen session, run hive command!
+ssh -t ${USERNAME}@tdc1.cs.wisc.edu screen -L ssh hadoop1 hive -f private/temp_query_file
+
+# clean up
+rm temp_query_file

@@ -1,0 +1,337 @@
+---
+title: A Guide for Using Hadoop
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: 
+      collapsed: true
+      smooth_scroll: false
+    number_sections: true
+    theme: simplex
+---
+---
+# Overview
+
+This is a guide for accessing the Twitter archive of [School of Journalism and Mass Communication, University of Wisconsin-Madison](https://mcrc.journalism.wisc.edu/). No prior knowledge is assumed, except the ability to read English. Of course, you should have access to hadoop (contact [Prof. Dhavan Shah](mailto:dshah@wisc.edu)). Linux or Mac are required for this guide.
+
+Hadoop is the system which hosts the Twitter archive. The process of retrieving data from this archive, based on certain parameters such has time range, keywords, user names etc. is referred to as "making a pull" or "submitting a job". The workflow is the following:
+
+1. Write the parameters of interest in a file.
+2. Use a script to send that file to the cs server, and run the file.
+3. After the job finishes, get the output from the cs server to your computer.
+
+In this guide you'd learn how to do all that!
+
+If you want to make this guide better, have questions or are facing any issues, you are more than welcome to [email me](mailto:aabhishek@wisc.edu).
+
+
+# Getting Started: Using the Terminal 
+
+Below are some commands that you should be comfortable with. This "language" is called "command line". You can try these out in the terminal on your laptop. This is important because we would not be able to use a graphical user interface when we log into the cs server. All the files that you work with, submitting jobs - everything will be through the terminal. [Here is simple  tutorial that you'd probably find very useful](https://tutorial.djangogirls.org/en/intro_to_command_line/).
+
+* `cd`: Moving around 
+* `ls`: Listing files and directories
+* `rm`: Remove files (and directories)
+* `mkdir`: Make directory
+* `cp`: Copy files/directories
+* `mv`: Move/rename files/directories
+
+All of the above commands have a lot of accessible documentation, so I am not writing the details here. For example, if you do `ls -l`, you can view everything in a list format; `ls -lh` gives file sizes in "human readable" list format; `ls -lt` arranges files according to time last modified; and you can combine these like `ls -lht`. 
+
+**Important time saving tricks**
+
+1. Pressing <kbd>tab</kbd> in terminal autocompletes.
+1. Pressing <kbd>up</kbd> and <kbd>down</kbd> on your keyboard lets you scroll through your previous inputs.
+
+**More**
+
+Some thing to look up and learn, but can be skipped now:
+
+1. How do you delete a folder that is empty, or non-empty?
+1. Can you `ls` somewhere without doing `cd` into that location first? Same question for removing and copying files.
+1. What is `scp`?
+
+# SSH
+
+## SSH into cs server
+SSH is a way to access a computer remotely. That is how we access the cs server. 
+
+1. In your terminal, type `ssh username@tdc1.cs.wisc.edu` and press <kbd>ENTER</kbd>. Here, `username` should be replaced by your own username (mine is `aabhishek`).
+2. Enter your password when prompted, and press <kbd>ENTER</kbd>.
+
+If you didn't get any error, it means you're in! On the left of your cursor you would see something like `aabhishek@tdc1$`, which verifies that you're on `tdc1.cs` server. Use the commands from the previous page (`cd`, `ls`, etc.) to look around. This is your space on the cs server. When any hadoop pull is done, the resulting files would be in here. You would then copy those files on your computer.
+
+## SSH into hadoop
+
+To actually submit a job, view datasets that are available, etc., we would actually need to SSH again - this time into the hadoop server.
+
+1. `ssh hadoop1` *from inside the cs server*.
+2. No password would be asked, and you would see something like `username@hadoop1$` right next to the cursor.
+
+You're in! This space that you're in is a bit different. Commands that we learnt change a bit in the following way:
+
+* `ls`: `hadoop fs -ls`
+* `mkdir`: `hadoop fs -mkdir`
+
+Essentially, commands work the same as before, but with a `hadoop fs -` prefixed to them. **If you did not prefix `hadoop fs -`, the commands would output and work as if you were on the cs server**. That is convenient, because then you can just stay on the hadoop server, and depending on what you want to do you can use the prefix or not.
+
+# Submitting a Test Job
+
+All of the steps in this section are to be done locally on your computer, and not the `cs` or hadoop server. If you're on a server, type `exit` and press <kbd>ENTER</kbd> to get yourself out.
+
+## Setup
+
+1. Make a folder on *your* laptop where you will be keeping all the pull scripts.
+1. Place [this script](https://raw.githubusercontent.com/amanabhishk/hadoop_guide/master/hsubmit) in the same folder. *Do not worry about the extension - there should be no extension*.
+1. Open the script in some text editor - TextEdit/Sublime Text on Mac would work. Here too, change `your_username_goes_here` to your own username (like `aabhishek`). *There is only one place - line 13 - which you will be editing in this step.*
+1. Back in your terminal, enter `chmod +x hsubmit`. This gives the computer the permission to run `hsubmit` as a script. 
+
+What you did just now is set up a script `hsubmit` which can copy the contents from a job file on your computer to the hadoop server, and run it. Without this script there will be a lot of steps which you would have to do manually, so you're welcome ([Devin Conathan](https://github.com/dconathan) wrote this originally). All the steps in this section need to be done just once, sort of like installing a program - that is why it is titled "Setup". Now you are set to submit jobs. 
+
+## Getting the Job ready
+
+1. Place [this](https://raw.githubusercontent.com/amanabhishk/hadoop_guide/master/test.sql) small test job in that folder. Save the file as is, do not change the extension (it should be .sql by default).
+1. Change `your_username_goes_here` in the top of that file to your own username (like `aabhishek`). 
+
+If you skim the file you would notice that it will look in the table (database) `gh_rc2` for the keyword `gun` during June 6, 2014. More on this later.
+
+## Submitting the Job
+
+1. From your terminal on *your* computer, move into the directory which you created previously where `hsubmit` is. 
+1. Enter `./hsubmit test.sql` in your terminal.
+1. You will be asked to enter your password twice. That is okay - the first time it copies the job file to the cs server, and the second time it runs the job in the hadoop server.
+1. You would see some output, which would look like [Appendix].
+1. Congratulations! The job is running. All the output on your screen will disappear when the pull is complete.
+
+# Extracting the Test Job Output
+
+## Merging and Coverting the Output
+
+The output from `test.sql` is now on the hadoop server. It is not in `csv` format - its scattered into tiny files. In order to get the job output as a single csv file:
+
+1. Get onto the hadoop server.
+1. Do `hadoop fs -getmerge gun gun.csv` <kbd>Enter</kbd>. Here, `-getmerge` tells hadoop to merge the tiny files into one file. `gun` is that raw output which consists of many tiny files. `gun.csv` is combined csv file, and you can name this anything - `anything.csv` would work too.
+1. If you did `ls` now, you will see `gun.csv` in the cs directory.
+
+Note: `gun` is the name of the raw output from the pull. The name of the raw output is mentioned in the top line of `test.sql`. You could change this in the SQL file, and that would change the output name.
+
+## Moving the output to your computer
+
+For doing any analysis, you need to copy the the csv file from the above step to your own computer:
+
+1. Open terminal on your laptop and navigate into the directory where you want the output to be copied to.
+1. `scp username@tdc1.cs.wisc.edu:~/gun.csv .` (note the period at the end) where `username` is your username.
+1. After a progress bar, the csv file should be on your laptop. Check with `ls`. Open it with some editor. It will be scrambled and columns won't be labelled (see [Appendix] for column names).
+
+In the following sections, you'd learn (in brief) how to write your own jobs, and managing jobs that are running.
+
+# Writing a SQL Script
+
+**It would be useful to look at these [examples](https://github.com/amanabhishk/hadoop_guide/tree/master/examples) while going over this section.**
+
+
+## Specifying Job Output
+
+The first line in any SQL file is something like:
+
+    insert overwrite directory 'hdfs://hadoop1.cs.wisc.edu:8020/user/aabhishek/this_file'
+
+This line determines what the output file will be named. In this example, it will be named `this_file`, and once the pull is finished you would be able to see it by doing `hadoop fs -ls`.
+
+When you write a new script, you should change the file name to something descriptive and avoid overwriting a file that exists already. If you wanted to delete the output from our example, you can do `hadoop fs -rm -r -skipTrash this_file`.
+
+
+## Selecting Fields from the Tables
+
+The second thing in a SQL file is this:
+
+
+    id_str,
+    created_at,
+    user.id_str,
+    regexp_replace(user.name, '[\\s]+', " "),
+    user.screen_name,
+    regexp_replace(user.description, '[\\s]+', " "),
+    user.followers_count,
+    user.friends_count,
+    user.verified,
+    geo.type,
+    geo.coordinates,
+    regexp_replace(text, '[\\s]+', " "),
+    retweeted_status.id_str,
+    retweeted_status.created_at,
+    retweeted_status.user.id_str,
+    regexp_replace(retweeted_status.user.name, '[\\s]+', " "),
+    retweeted_status.user.screen_name,
+    regexp_replace(retweeted_status.user.description, '[\\s]+', " "),
+    retweeted_status.user.followers_count,
+    retweeted_status.user.friends_count,
+    retweeted_status.user.verified,
+    retweeted_status.geo.type,
+    retweeted_status.geo.coordinates,
+    regexp_replace(retweeted_status.text, '[\\s]+', " ")
+
+Which would be in a single line or multiple (like [this](https://github.com/amanabhishk/hadoop_guide/blob/master/examples/username.sql) or [this](https://github.com/amanabhishk/hadoop_guide/blob/master/examples/geotagged1.sql))  - it doesn't matter.
+
+This line tells hadoop whcih fields we are interested in. The fields specified above and in example files are in fact all the available fields in our dataset, so you won't have to modify anything.
+
+## Specifying the "table"
+
+Data on hadoop exists in different "tables" (files). It is important to know which time period is contained in a table, so that we can decide whether to look in it or not. The contents of the tables can change ([Alex Hanna](http://alex-hanna.com/) maintains this so its up to her), but it happens rarely. To get information regarding this, you can do `hdfs dfs -ls /user/ahanna/gh*` from the hadoop server.
+
+Today (July 8, 2018), doing so returns the following:
+
+
+	Found 2 items
+	-rw-r--r--   2 ahanna hadoop   1699758080 2014-02-16 18:44 /user/ahanna/gh/gh.20120208.json.gz
+	-rw-r--r--   2 ahanna hadoop 149444872392 2014-03-21 20:45 /user/ahanna/gh/gh.20140320.json
+	Found 5 items
+	drwxr-xr-x   - ahanna hadoop            0 2016-07-18 23:49 /user/ahanna/gh_raw/year=2013
+	drwxr-xr-x   - ahanna hadoop            0 2016-07-23 07:22 /user/ahanna/gh_raw/year=2014
+	drwxr-xr-x   - ahanna hadoop            0 2016-12-02 01:22 /user/ahanna/gh_raw/year=2016
+	drwxr-xr-x   - ahanna hadoop            0 2017-12-02 01:30 /user/ahanna/gh_raw/year=2017
+	drwxr-xr-x   - ahanna hadoop            0 2018-03-02 01:35 /user/ahanna/gh_raw/year=2018
+	Found 2 items
+	drwxr-xr-x   - ahanna hadoop            0 2014-03-16 13:06 /user/ahanna/gh_rc/year=2012
+	drwxr-xr-x   - ahanna hadoop            0 2014-04-17 13:40 /user/ahanna/gh_rc/year=2013
+	Found 6 items
+	drwxr-xr-x   - ahanna hadoop            0 2014-04-28 16:24 /user/ahanna/gh_rc2/year=2013
+	drwxr-xr-x   - ahanna hadoop            0 2016-07-23 07:27 /user/ahanna/gh_rc2/year=2014
+	drwxr-xr-x   - ahanna hadoop            0 2016-02-09 15:32 /user/ahanna/gh_rc2/year=2015
+	drwxr-xr-x   - ahanna hadoop            0 2016-12-02 01:26 /user/ahanna/gh_rc2/year=2016
+	drwxr-xr-x   - ahanna hadoop            0 2017-07-24 15:05 /user/ahanna/gh_rc2/year=2017
+	drwxr-xr-x   - ahanna hadoop            0 2018-01-17 11:29 /user/ahanna/gh_rc2/year=2018
+	Found 3 items
+	drwxr-xr-x   - ahanna hadoop            0 2017-03-17 15:54 /user/ahanna/gh_rc3/year=2016
+	drwxr-xr-x   - ahanna hadoop            0 2017-12-02 01:39 /user/ahanna/gh_rc3/year=2017
+	drwxr-xr-x   - ahanna hadoop            0 2018-03-02 01:39 /user/ahanna/gh_rc3/year=2018
+	Found 2 items
+	drwxr-xr-x   - ahanna hadoop            0 2017-03-17 15:50 /user/ahanna/gh_rc3_raw/year=2016
+	drwxr-xr-x   - ahanna hadoop            0 2017-03-07 14:23 /user/ahanna/gh_rc3_raw/year=2017
+
+
+The tables that we are interested in are everything except the ones that have `raw` in their name because, well, they are raw and you can't eat raw fruits. From above we know that if we want data from 2012, we need to look only in `gh_rc`; while for 2013, we need to look in `gh_rc` as well as `gh_rc2`. This information is useful for the line in the SQL file where you specify the table:
+
+`FROM gh_rc`
+
+If you want to select two tables (for 2013, for instance), you would have to write everything twice (like [here](https://github.com/amanabhishk/hadoop_guide/blob/master/examples/numeric_id.sql)). There is no way to select two tables at once (that I know of).
+
+## Specifying the Search Parameters
+
+This is the part where you specify what you are searching for. Here are some [examples](https://github.com/amanabhishk/hadoop_guide/tree/master/examples) which I think are quite self explanatory. Remember that using brackets is a good idea whenever you are unsure. For example:
+
+`(x AND y) OR z` would compute `(x AND y)` first, and then do the rest. In comparison, `x AND y OR z` is "riskier", unless you remember the default ordering of operators.
+
+## Using the same SQL file for Multiple Jobs
+
+You can submit multiple jobs that would run consecutively in a single file. For example, see [this](https://github.com/amanabhishk/hadoop_guide/blob/master/examples/numeric_id.sql). There are two jobs in that file called `job1` and `job2`. The only thing to keep in mind while doing is that a semicolon `;` should separate the jobs, as you would notice at the end of line 5 in that file.
+
+# Managing a Running Job
+
+## "Exiting" from a Submitted Job
+
+Once you submit a job and start seeing something like:
+
+    Logging initialized using configuration in file:/etc/hive/conf.dist/hive-log4j.properties
+    Hive history file=/tmp/aabhishek/hive_job_log_c1bce8d6-5daa-4927-9ac4-a716a2b3f06b_507858846.txt
+    Total MapReduce jobs = 3
+    Launching Job 1 out of 3
+    Number of reduce tasks is set to 0 since there's no reduce operator
+    Starting Job = job_201802021028_0174, Tracking URL = http://hadoop1.cs.wisc.edu:50030/jobdetails.jsp?jobid=job_201802021028_0174
+    Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_201802021028_0174
+    Hadoop job information for Stage-1: number of mappers: 26; number of reducers: 0
+    2018-02-16 13:35:44,446 Stage-1 map = 0%,  reduce = 0%
+    2018-02-16 13:35:54,502 Stage-1 map = 2%,  reduce = 0%
+    2018-02-16 13:35:55,511 Stage-1 map = 11%,  reduce = 0%
+    2018-02-16 13:35:56,524 Stage-1 map = 17%, reduce = 0%, Cumulative CPU 52.29 sec
+
+You can either close your terminal window (that will not kill the job) or press <kbd>Ctrl</kbd> + <kbd>a</kbd> followed by <kbd>d</kbd>. Essentially, once the job is submitted the way in which you close things doesn't matter. The job is not running on your laptop, so you can close that too unless you want to see the percent completion, and you know that the job won't take that long.
+
+## Checking Job Status
+
+You can ssh into hadoop and check if your job is still running by doing `mapred job -list`. This would show you something like:
+
+    $ mapred job -list
+    
+    3 jobs currently running
+    JobId	State	StartTime	UserName	Priority	SchedulingInfo
+    job_201804201535_0452	1	1529536111893	aabhishek	NORMAL	NA
+    job_201804201535_0455	1	1529616541563	aabhishek	NORMAL	NA
+    job_201804201535_0498	4	1530079836201	ahanna	        NORMAL	NA
+
+Which means that 3 jobs are running right now, from 2 users `aabhishek` and `ahanna`, along with their `JobID`s. It is good practice to keep track of your `jobID` when you are running more than one jobs in case you decide to terminate a running job. 
+
+If doing `mapred job -list` does not list your job, it could mean that your job completed or crashed. In the former case, you would be able to see the output you expect by doing `hadoop fs -ls`, and in the latter you won't see anything on doing the same.
+
+## Terminating a Running Job
+
+You need the `JobID` of the job you want to terminate. This can be obtained from `mapred job -list`. For example:
+
+    $ mapred job -list
+    
+    3 jobs currently running
+    JobId	State	StartTime	UserName	Priority	SchedulingInfo
+    job_201804201535_0452	1	1529536111893	aabhishek	NORMAL	NA
+    job_201804201535_0455	1	1529616541563	aabhishek	NORMAL	NA
+    job_201804201535_0498	4	1530079836201	ahanna	        NORMAL	NA
+
+To terminate the job at the top, you can do `mapred job -kill job_201804201535_0452`.
+
+# Troubleshooting Strategies
+
+Below are some general things to keep in mind. If you are still stuck on something, please feel free to contact me.
+
+* If there is an error in the syntax of your SQL file, you would get to know right when you submit the job. That is, you would never see the percentage completion (see [Appendix]). Instead, all output from your terminal would disappear and you would see the message `screen is terminating`. This means there is a mistake somewhere in the SQL file. This is probably the easiest bug to fix because the job never runs to begins with. 
+
+* The trickiest cases are where the was running, but later it doesn't show up in `mapred job -list` and neither is there any output on doing `hadoop fs -ls`. In such cases, the file `screenlog.0` on the cs server contains the output when the job is submitted, and can contain useful information on what the error was before the job crashed. Try to read and understand these errors, which would be at the end of the file right before the job crashed. You can see that `screenlog.0` exists by doing `ls` and opening the file with a software such as `vim` (do `vim screenlog.0`). There are plenty of resources on how to use `vim`.
+
+* For the above reason **it a very good idea to delete the `screenlog.0` file before submitting a job**. That way, you know that the contents of `screenlog.0` reflect what happened to your most recent job.
+
+* If you cannot do `ssh hadoop1` and its not an issue of not have permissions, then contact cs helpdesk. If there are some errors which look strange, let me know - these could be server-end issues too.
+
+* Looking at these [examples](https://github.com/amanabhishk/hadoop_guide/tree/master/examples) might be useful if you are confused about something.
+
+# Appendix
+
+## Running Job Sample Output
+
+    Logging initialized using configuration in file:/etc/hive/conf.dist/hive-log4j.properties
+    Hive history file=/tmp/aabhishek/hive_job_log_c1bce8d6-5daa-4927-9ac4-a716a2b3f06b_507858846.txt
+    Total MapReduce jobs = 3
+    Launching Job 1 out of 3
+    Number of reduce tasks is set to 0 since there's no reduce operator
+    Starting Job = job_201802021028_0174, Tracking URL = http://hadoop1.cs.wisc.edu:50030/jobdetails.jsp?jobid=job_201802021028_0174
+    Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_201802021028_0174
+    Hadoop job information for Stage-1: number of mappers: 26; number of reducers: 0
+    2018-02-16 13:35:44,446 Stage-1 map = 0%,  reduce = 0%
+    2018-02-16 13:35:54,502 Stage-1 map = 2%,  reduce = 0%
+    2018-02-16 13:35:55,511 Stage-1 map = 11%,  reduce = 0%
+    2018-02-16 13:35:56,524 Stage-1 map = 17%, reduce = 0%, Cumulative CPU 52.29 sec
+
+## Column Names
+
+    0 tweet id
+    1 created at
+    2 user id
+    3 user name
+    4 user handle
+    5 user description
+    6 followers
+    7 friends
+    8 verified
+    9 geo type
+    10 coordinates
+    11 tweet
+    12 retweet id
+    13 retweet created at
+    14 retweed user id
+    15 retweet user name
+    16 retweet user handle
+    17 retweet user description
+    18 retweet user followers
+    19 retweet user friends
+    20 retweet user verified
+    21 retweet geo type
+    22 retweet coordinates
+    23 retweet

@@ -120,7 +120,7 @@ The output from `test.sql` is now on the hadoop server. It is not in `csv` forma
 
 Note 1: `gun` is the name of the raw output from the pull. The name of the raw output is mentioned in the top line of `test.sql`. You could change this in the SQL file, and that would change the output name.
 
-Note 2: The general structure of `getmerge` command is `hadoop fs -getmerge [rawoutputXYZ] [final.csv]`, where the name `final` is of your choosing, and `rawoutputXYZ` is the name of the raw output.
+Note 2: The general structure of `getmerge` command is `hadoop fs -getmerge rawoutputXYZ final.csv`, where the name `final` is of your choosing, and `rawoutputXYZ` is the name of the raw output.
 
 ## Moving the output to your computer
 

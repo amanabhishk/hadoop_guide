@@ -47,14 +47,6 @@ All of the above commands have a lot of accessible documentation, so I am not wr
 1. Pressing <kbd>tab</kbd> in terminal autocompletes.
 1. Pressing <kbd>up</kbd> and <kbd>down</kbd> on your keyboard lets you scroll through your previous inputs.
 
-**More**
-
-Some thing to look up and learn, but can be skipped now:
-
-1. How do you delete a folder that is empty, or non-empty?
-1. Can you `ls` somewhere without doing `cd` into that location first? Same question for removing and copying files.
-1. What is `scp`?
-
 # SSH
 
 ## SSH into cs server
@@ -86,9 +78,9 @@ All of the steps in this section are to be done locally on your computer, and no
 ## Setup
 
 1. Make a folder on *your* laptop where you will be keeping all the pull scripts.
-1. Place [this script](https://raw.githubusercontent.com/amanabhishk/hadoop_guide/master/hsubmit) in the same folder. Name the file `hsubmit`, but *do not worry about the extension - there should be no extension*. The easiest way to do that might be opening the link in your browser and then saving the webpage. 
-1. Open the script in some text editor - TextEdit/Sublime Text on Mac would work. Here too, change `your_username_goes_here` to your own username (like `aabhishek`). *There is only one place - line 13 - which you will be editing in this step.*
-1. Back in your terminal, navigate to the folder folder you created in the first step, where `hsubmit` is. Enter `chmod +x hsubmit`. This gives the computer the permission to run `hsubmit` as a script. 
+1. Place [this script](https://raw.githubusercontent.com/amanabhishk/hadoop_guide/master/hsubmit) in the same folder. <mark>The easiest way to do that might be opening the link in your browser and then saving the webpage (shortcut is <kbd>command</kbd>+<kbd>s</kbd> on Mac). Name the file `hsubmit`, but *do not worry about the extension - there should be no extension*.  </mark>
+1. Open the script in some text editor - TextEdit/Sublime Text on Mac would work. Here, change `your_username_goes_here` to your own username (like `aabhishek`). *There is only one place - line 13 - which you will be editing in this step.*
+1. Back in your terminal, navigate to the folder you created in the first step, where `hsubmit` is. Enter `chmod +x hsubmit`. This gives the computer the permission to run `hsubmit` as a script. 
 
 What you did just now is set up a script `hsubmit` which can copy the contents from a job file on your computer to the hadoop server, and run it. Without this script there will be a lot of steps which you would have to do manually, so you're welcome ([Devin Conathan](https://github.com/dconathan) wrote this originally). All the steps in this section need to be done just once, sort of like installing a program - that is why it is titled "Setup". Now you are set to submit jobs. 
 
@@ -114,13 +106,13 @@ If you skim the file you would notice that it will look in the table (database) 
 The output from `test.sql` is now on the hadoop server. It is not in `csv` format - its scattered into tiny files. In order to get the job output as a single csv file:
 
 1. Get onto the hadoop server.
-1. You can check that your job's output is there or not by doing `hadoop fs -ls`. You should see `gun` when you do so, and the corresponding listed date of file creation should make sense. `gun` is the raw output which consists of many tiny files - it is not a regular csv file, which is what we want.
-1. The next step is to use `getmerge` command to convert the raw `gun` to `gun.csv`, where the latter would be the final output. Do do this, do `hadoop fs -getmerge gun gun.csv`. 
-1. If you did `ls` now, you will see `gun.csv` in the cs directory. `gun.csv` contains the data from your job, ready for analysis and publication!
+1. <mark>You can check that your job's output is there or not by doing `hadoop fs -ls`. You should see `gun` when you do so, and the corresponding listed date of file creation should make sense. `gun` is the raw output which consists of many tiny files - it is not a regular csv file, which is what we want.</mark>
+1. <mark>The next step is to use `getmerge` command to convert the raw `gun` to `gun.csv`, where the latter would be the final output. Do do this, do `hadoop fs -getmerge gun gun.csv`. </mark>
+1. <mark>If you did `ls` now, you will see `gun.csv` in the cs directory. `gun.csv` contains the data from your job, ready for analysis and publication!</mark>
 
 Note 1: `gun` is the name of the raw output from the pull. The name of the raw output is mentioned in the top line of `test.sql`. You could change this in the SQL file, and that would change the output name.
 
-Note 2: The general structure of `getmerge` command is `hadoop fs -getmerge rawoutputXYZ final.csv`, where the name `final` is of your choosing, and `rawoutputXYZ` is the name of the raw output.
+<mark>Note 2: The general structure of `getmerge` command is `hadoop fs -getmerge rawoutputXYZ final.csv`, where the name `final` is of your choosing, and `rawoutputXYZ` is the name of the raw output.</mark>
 
 ## Moving the output to your computer
 

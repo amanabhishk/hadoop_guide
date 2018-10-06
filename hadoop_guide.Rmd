@@ -176,7 +176,7 @@ This line tells hadoop whcih fields we are interested in. The fields specified a
 
 ## Specifying the "table"
 
-Data on hadoop exists in different "tables" (files). It is important to know which time period is contained in a table, so that we can decide whether to look in it or not. The contents of the tables can change ([Alex Hanna](http://alex-hanna.com/) maintains this so its up to her), but it happens rarely. To get information regarding this, you can do `hdfs dfs -ls /user/ahanna/gh*` from the hadoop server.
+Data on hadoop exists in different "tables" (files). It is important to know which time period is contained in a table, so that we can decide whether to look in it or not. The contents of the tables can change ([Alex Hanna](http://alex-hanna.com/) maintains this so its up to them), but it happens rarely. To get information regarding this, you can do `hdfs dfs -ls /user/ahanna/gh*` from the hadoop server.
 
 Today (July 8, 2018), doing so returns the following:
 
@@ -275,6 +275,20 @@ You need the `JobID` of the job you want to terminate. This can be obtained from
     job_201804201535_0498	4	1530079836201	ahanna	        NORMAL	NA
 
 To terminate the job at the top, you can do `mapred job -kill job_201804201535_0452`.
+
+# Advanced 
+
+You need not go over this section if you're new to hadoop.
+
+## Finding all the Available Fields in a Table
+
+Section 6.2 [Selecting Fields from the Tables] outlined how to select fields from a table. Different tables have different fields, however. The newer tables, like `gh_rc3` from 2016, contain additional fields such as `quoted_status`. To check all the fields that are available in a particular table, you can follow the steps below.
+
+1. Log into hadoop. You would see something like `user@hadoop1` next to your cursor if you do that successfully.
+1. Type `hive` and hit <kbd>Enter</kbd>. You should see something like `hive>` next to your cursor.
+1. Type `show tables;` and hit <kbd>Enter</kbd> to see all the available tables on hadoop (note the semicolon at the end of the command). This would show you tables like `gh_rc`, `gh_rc2`, and others.
+1. To check out the available fields in a table - say `gh_rc3` - type `describe gh_rc3;` and hit <kbd>Enter</kbd>. The output might seem hard to read, but you'd see fields such as `quoted_status` there. If you did  `describe gh_rc;`, you won't see `quoted_status`, because that particular functionality did not exist back in 2012/2013.
+1. To get out of this hive space at any point, type `exit;` and hit <kbd>Enter</kbd>. This should get you back to `user@hadoop1` level.
 
 # Troubleshooting Strategies
 

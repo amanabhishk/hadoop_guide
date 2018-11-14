@@ -306,6 +306,10 @@ Below are some general things to keep in mind. If you are still stuck on somethi
 
 * Looking at these [examples](https://github.com/amanabhishk/hadoop_guide/tree/master/examples) might be useful if you are confused about something.
 
+# Miscellaneous
+
+1. `hdfs dfs -df -h`: to check for available storage space on hadoop.
+
 # Appendix
 
 ## Running Job Sample Output

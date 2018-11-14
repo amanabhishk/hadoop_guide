@@ -215,6 +215,8 @@ The tables that we are interested in are everything except the ones that have `r
 
 If you want to select two tables (for 2013, for instance), you would have to write everything twice (like [here](https://github.com/amanabhishk/hadoop_guide/blob/master/examples/numeric_id.sql)). There is no way to select two tables at once (that I know of).
 
+**Important**: Make sure you check for and remove duplicates while gathering data from multiple tables.
+
 ## Specifying the Search Parameters
 
 This is the part where you specify what you are searching for. Here are some [examples](https://github.com/amanabhishk/hadoop_guide/tree/master/examples) which I think are quite self explanatory. Remember that using brackets is a good idea whenever you are unsure. For example:
